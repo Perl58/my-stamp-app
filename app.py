@@ -13,7 +13,7 @@ app = Flask(__name__)
 # --- Firestore 初期化（プロジェクトID: my-stamp-app-487411 に固定） ---
 if not firebase_admin._apps:
     firebase_admin.initialize_app()
-# 確実に王女さまの正史データベース 'stamp-db' に繋ぎます
+# 正史データベース 'stamp-db' に繋ぎます
 db = google_firestore.Client(project='my-stamp-app-487411', database='stamp-db')
 
 # --- タイムゾーン設定 ---
