@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Ann's Stamp</title>
+    <style>
+        :root {
+            --snoopy-red: #e53935;
+            --snoopy-white: #ffffff;
+            --cookie-brown: #795548;
+            --cookie-light: #f3e5ab;
+            --pencil-black: #2d2d2d;
+        }
+
+        body {
+            background-color: var(--snoopy-white);
+            font-family: 'Hiragino Sans', sans-serif;
+            color: var(--pencil-black);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .world-clock {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .clock-item {
+            border-bottom: 3px solid var(--pencil-black);
+            padding: 5px 15px;
+        }
+        .clock-label { font-size: 0.7em; display: block; }
+
+        .summary-box {
+            background: var(--snoopy-red);
+            color: white;
+            padding: 15px;
+            border-radius: 50px 50px 10px 10px;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            border: 3px solid var(--pencil-black);
+        }
+
+        /* キャンディバー */
+        .candy-bar {
+            background: #fff8e1;
+            border: 2px solid var(--pencil-black);
+            border-radius: 20px;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        .candy-icons { font-size: 1.4em; letter-spacing: 4px; }
+        .candy-empty { opacity: 0.2; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 50px); 
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fdf5e6;
+            border: 3px solid var(--pencil-black);
+            border-radius: 15px;
+            max-width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .day-header {
+            font-size: 0.9em;
+            font-weight: bold;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        .cell {
+            width: 45px;
+            height: 45px;
+            border: 2px solid var(--pencil-black);
+            background: white;
+            border-radius: 10px;
+            position: relative;
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+        .cell:hover { transform: scale(1.1); }
+
+        .cell-link {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .date-num {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 0.6em;
+            color: #999;
+        }
+
+        .stamp-icon { font-size: 24px; }
+
+        .logs-container {
+            max-width: 500px;
+            margin: 30px auto;
+            text-align: left;
+            border-left: 5px solid var(--cookie-light);
+            padding-left: 20px;
+        }
+        .log-item { margin-bottom: 10px; list-style: none; }
+        .log-date { font-weight: bold; color: var(--snoopy-red); margin-right: 10px; }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--pencil-black);
+            border: 2px solid var(--pencil-black);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="world-clock">
+        <div class="clock-item">
+            <span class="clock-label">TOKYO</span>
+            {{ jst_time }}
+        </div>
+        <div style="font-size: 1.5em;">🐾</div>
+        <div class="clock-item">
+            <span class="clock-label">L.A.</span>
+            {{ pst_time }}
+        </div>
+    </div>
+
+    <div class="summary-box">
+        <h2 style="margin:0;">Cookie Sheet #{{ sheet + 1 }}</h2>
+        <p>Total: {{ total }} cookies 🍪</p>
+    </div>
+
+    {# キャンディバー #}
+    <div class="candy-bar">
+        <span>🍬 Next Cookie:</span>
+        <span class="candy-icons">
+            {% for i in range(3) %}
+                {% if i < candy_count %}
+                    🍬
+                {% else %}
+                    <span class="candy-empty">🍬</span>
+                {% endif %}
+            {% endfor %}
+        </span>
+        <span style="color: #999; font-size: 0.85em;">{{ candy_count }} / 3</span>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <a href="/{{ mode }}?year={{ year if month > 1 else year - 1 }}&month={{ month - 1 if month > 1 else 12 }}" class="nav-btn">◀ Prev</a>
+        <span style="font-weight: bold; margin: 0 20px;">{{ year }} / {{ month }}</span>
+        <a href="/{{ mode }}?year={{ year if month < 12 else year + 1 }}&month={{ month + 1 if month < 12 else 1 }}" class="nav-btn">Next ▶</a>
+    </div>
+
+    <div class="grid">
+        <div class="day-header" style="color: #e53935; font-weight: bold;">日</div>
+        <div class="day-header">月</div>
+        <div class="day-header">火</div>
+        <div class="day-header">水</div>
+        <div class="day-header">木</div>
+        <div class="day-header">金</div>
+        <div class="day-header" style="color: #1e88e5; font-weight: bold;">土</div>
+
+        {% for _ in range(first_day_index) %}
+            <div class="cell" style="background: transparent; border: none;"></div>
+        {% endfor %}
+
+        {% for d in range(1, last_date + 1) %}
+            {% set date_str = "%04d-%02d-%02d" | format(year, month, d) %}
+            <div class="cell">
+                {% if month == 4 and d == 4 %}
+                    <a href="/birthday_card" class="cell-link" style="background-color: #fff9c4;">
+                        <span class="date-num" style="color: var(--snoopy-red); font-weight: bold;">{{ d }}</span>
+                        <div class="stamp-icon">🎂</div>
+                    </a>
+                {% else %}
+                    <a href="/edit/{{ mode }}/{{ date_str }}" class="cell-link">
+                        <span class="date-num">{{ d }}</span>
+                        {% if date_str in log_dict %}
+                            <div class="stamp-icon">{{ log_dict[date_str] }}</div>
+                        {% endif %}
+                    </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div style="max-width: 500px; margin: 20px auto; text-align: left;">
+        <h3>Latest Homework 📝</h3>
+        {% if all_logs %}
+            {{ all_logs[-1].homework }}
+        {% else %}
+            <span>（宿題の読み込みを待っています）</span>
+        {% endif %}
+    </div>
+
+    <div class="logs-container">
+        <h3>Class Logs 🍪</h3>
+        {% for log in all_logs | reverse %}
+        <div class="log-item">
+            <span class="log-date">{{ log.date }}</span>
+            <span>{{ log.student_comment }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="text-align:center; margin: 20px; display:flex; flex-direction:column; gap:10px; align-items:center;">
+    <button onclick="startChallenge()" style="background:#e53935; color:white; border:none; padding:12px 30px; border-radius:30px; font-size:1em; cursor:pointer;">
+        🍬 キャンディチャレンジ
+    </button>
+    <a href="/contact/{{ mode }}" style="text-decoration:none; color:#555; border:1px solid #555; padding:6px 16px; border-radius:20px; font-size:0.85em;">
+        ✉️ Contact Teacher
+    </a>
+    <a href="/admin/{{ mode }}" style="text-decoration:none; color:#555; border:1px solid #555; padding:6px 12px; border-radius:6px; font-size:0.8em;">
+        管理ページへ
+    </a>
+</div>
+
+<div id="challenge-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:white; border-radius:16px; padding:30px; max-width:400px; width:90%; text-align:center;">
+        <h3 id="modal-title">🍬 キャンディチャレンジ</h3>
+        <div id="modal-content">読み込み中...</div>
+        <button onclick="closeChallenge()" style="margin-top:15px; background:#ccc; color:#333; border:none; padding:8px 20px; border-radius:20px; cursor:pointer;">閉じる</button>
+    </div>
+</div>
+
+<script>
+let questions = [];
+let currentQ = 0;
+let correctCount = 0;
+
+async function startChallenge() {
+    document.getElementById('challenge-modal').style.display = 'flex';
+    document.getElementById('modal-content').innerHTML = '問題を生成中... 🍬';
+    
+    const res = await fetch('/api/candy/{{ mode }}/challenge');
+    const data = await res.json();
+    questions = data.questions;
+    currentQ = 0;
+    correctCount = 0;
+    showQuestion();
+}
+
+function showQuestion() {
+    if (currentQ >= questions.length) {
+        showResult();
+        return;
+    }
+    const q = questions[currentQ];
+    const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+    document.getElementById('modal-title').textContent = `問題 ${currentQ + 1} / ${questions.length}`;
+    
+    const btns = shuffled.map(c => {
+        const btn = document.createElement('button');
+        btn.textContent = c;
+        btn.style = 'display:block; width:100%; margin:6px 0; padding:10px; border:2px solid #e0e0e0; border-radius:10px; background:white; cursor:pointer; font-size:0.95em;';
+        btn.onclick = () => answer(c, q.answer);
+        return btn;
+    });
+    
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `<p style="font-size:1.1em; margin-bottom:15px;">${q.question}</p>`;
+    btns.forEach(btn => content.appendChild(btn));
+}
+
+async function answer(selected, correct) {
+    const isCorrect = selected === correct;
+    const res = await fetch('/api/candy/{{ mode }}/answer', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({answer: selected, correct: correct})
+    });
+    const data = await res.json();
+    
+    if (isCorrect) {
+        correctCount++;
+        document.getElementById('modal-content').innerHTML = `<p style="color:green; font-size:1.5em;">✅ 正解！</p>`;
+    } else {
+        document.getElementById('modal-content').innerHTML = `<p style="color:red; font-size:1.5em;">❌ 不正解</p><p>正解は: ${correct}</p>`;
+    }
+    
+    if (data.cookie_added) {
+        setTimeout(() => {
+            document.getElementById('modal-content').innerHTML = `<p style="font-size:2em;">🍪</p><p>スタンプゲット！</p>`;
+            setTimeout(() => location.reload(), 2000);
+        }, 1000);
+        return;
+    }
+    
+    currentQ++;
+    setTimeout(showQuestion, 1500);
+}
+
+function showResult() {
+    document.getElementById('modal-title').textContent = '結果';
+    document.getElementById('modal-content').innerHTML = `
+        <p style="font-size:1.2em;">${correctCount} / ${questions.length} 正解！</p>
+        <p>${correctCount === questions.length ? '🎉 全問正解！' : 'またチャレンジしてね！'}</p>
+    `;
+}
+
+function closeChallenge() {
+    document.getElementById('challenge-modal').style.display = 'none';
+}
+</script>
+
+</body>
+</html>

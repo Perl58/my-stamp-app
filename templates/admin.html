@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Ritual Diary – Admin</title>
+
+<style>
+body {
+    background: #f4e9d8;
+    font-family: "Hiragino Maru Gothic ProN", sans-serif;
+    color: #4a3b2f;
+    margin: 0;
+    padding: 0;
+}
+
+.page-wrapper {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-family: "YuMincho", serif;
+    font-size: 32px;
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #7a6a58;
+}
+
+.magic-circle {
+    width: 140px;
+    height: 140px;
+    border: 1px solid rgba(180, 150, 100, 0.4);
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    top: -20px;
+    transform: translateX(-50%);
+    opacity: 0.35;
+}
+
+.tabs {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.tab {
+    display: inline-block;
+    padding: 8px 20px;
+    margin: 0 5px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid #c8b79e;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #4a3b2f;
+    font-weight: bold;
+}
+
+.tab.active {
+    background: #f7f0e6;
+    border-color: #b89c6d;
+    box-shadow: 0 0 6px rgba(200, 170, 120, 0.5);
+}
+
+.table-wrapper {
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid #d6c7b2;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 0 10px rgba(180, 150, 100, 0.2);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #e8dcc7;
+    padding: 10px;
+    border-bottom: 2px solid #c8b79e;
+    font-family: "YuMincho", serif;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #e0d4c2;
+}
+
+tr:hover {
+    background: rgba(255, 245, 230, 0.5);
+}
+
+.edit-row {
+    background: #fffdf7;
+    border-left: 4px solid #b89c6d;
+}
+
+.edit-box {
+    padding: 15px;
+}
+
+.edit-box input,
+.edit-box textarea {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 10px;
+    border: 1px solid #c8b79e;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.save-btn {
+    background: #b89c6d;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.cancel-btn {
+    background: #aaa;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.edit, .delete {
+    text-decoration: none;
+    font-size: 18px;
+    padding: 4px;
+}
+
+.edit { color: #6b4f2a; }
+.delete { color: #a35f5f; }
+
+</style>
+
+<script>
+function toggleEdit(date) {
+    const row = document.getElementById("edit-" + date);
+    row.style.display = (row.style.display === "none") ? "table-row" : "none";
+}
+</script>
+
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <header class="header">
+        <div class="magic-circle"></div>
+        <h1>class log – Admin</h1>
+        <p class="subtitle">授業ログ管理ページ</p>
+    </header>
+
+    <div class="tabs">
+        <a href="/admin/ann" class="tab {{ 'active' if mode=='ann' else '' }}">★ Ann</a>
+        <a href="/admin/taisei" class="tab {{ 'active' if mode=='taisei' else '' }}">☆ Taisei</a>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>日付</th>
+                    <th>スタンプ</th>
+                    <th>公開コメント</th>
+                    <th>生徒コメント</th>
+                    <th>レッスンのポイント</th>
+                    <th>宿題</th>
+                    <th>AIメモ</th>
+                    <th>編集</th>
+                    <th>削除</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.date }}</td>
+                    <td>{{ log.stamp }}</td>
+                    <td>{{ log.public_comment }}</td>
+                    <td>{{ log.student_comment }}</td>
+                    <td>{{ log.lesson_point }}</td>
+                    <td>{{ log.homework }}</td>
+                    <td class="ai-memo">{{ log.ai_memo }}</td>
+
+                    <td><a href="javascript:void(0)" onclick="toggleEdit('{{ log.date }}')" class="edit">✎</a></td>
+                    <td><a href="/delete/{{ mode }}/{{ log.date }}" class="delete">✧</a></td>
+                </tr>
+
+                <tr id="edit-{{ log.date }}" class="edit-row" style="display:none;">
+                    <td colspan="9">
+                        <form method="POST" action="/update/{{ mode }}/{{ log.date }}" class="edit-box">
+                            <label>スタンプ</label>
+                            <input type="text" name="stamp" value="{{ log.stamp }}">
+
+                            <label>公開コメント</label>
+                            <textarea name="public_comment">{{ log.public_comment }}</textarea>
+
+                            <label>生徒コメント</label>
+                            <textarea name="student_comment">{{ log.student_comment }}</textarea>
+
+                            <label>レッスンのポイント</label>
+                            <textarea name="lesson_point">{{ log.lesson_point }}</textarea>
+
+                            <label>宿題</label>
+                            <textarea name="homework">{{ log.homework }}</textarea>
+
+                            <label>AIメモ</label>
+                            <textarea name="ai_memo">{{ log.ai_memo }}</textarea>
+
+                            <button type="submit" class="save-btn">保存</button>
+                            <button type="button" class="cancel-btn" onclick="toggleEdit('{{ log.date }}')">閉じる</button>
+                        </form>
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# 修正: 生徒ページへ戻るリンク #}
+    <div style="text-align:center; margin-top: 30px;">
+        {% if mode == 'ann' %}
+            <a href="/s01" style="text-decoration:none; color:#7a6a58; border:1px solid #c8b79e; padding:8px 20px; border-radius:8px;">
+                ← Ann のページへ
+            </a>
+        {% else %}
+            <a href="/s02" style="text-decoration:none; color:#7a6a58; border:1px solid #c8b79e; padding:8px 20px; border-radius:8px;">
+                ← Taisei のページへ
+            </a>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>

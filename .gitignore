@@ -1,0 +1,30 @@
+.env 
+__pycache__/ 
+*.pyc 
+credentials.json
+
+# --- ここから下を追加してください ---
+# データベースやログデータを隠す
+local_db.db
+local_app.db
+stamp.db
+*.db
+*.csv
+*.xlsx
+*.ods
+
+# 過去のバックアップや一時ファイルを隠す
+20260306_SAVEDATA/
+*SAVEDATA*
+*.png
+
+# 今回使わない過去の古いプログラム・不要なファイルを隠す
+20260512app.py
+app.py20260221
+app - コピー.yaml
+Procfile.txt
+test.py
+check_db.py
+bdcard_01.html
+contact.html
+hibiki-learn.com.txt

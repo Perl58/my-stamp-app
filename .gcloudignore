@@ -1,0 +1,10 @@
+credentials.json
+__pycache__/
+*.pyc
+*.py20260221
+20260306_SAVEDATA/
+local_app.db
+*.ods
+*.xlsx
+*.csv
+Gemini_Generated_Image_*.png

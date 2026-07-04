@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Studio Stamp - FL Style</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --fl-orange: #fb923c;
+            --text-main: #f1f5f9;
+            --grid-line: #334155;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--text-main);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .world-clock {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            font-family: 'Courier New', Courier, monospace;
+            background: black;
+            padding: 10px;
+            border-radius: 5px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid var(--grid-line);
+        }
+        .clock-item { color: var(--fl-orange); }
+        .clock-label { font-size: 0.6em; color: #64748b; display: block; }
+
+        .summary-box {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            border-left: 5px solid var(--fl-orange);
+            text-align: left;
+        }
+
+        /* キャンディバー */
+        .candy-bar {
+            background: var(--panel-bg);
+            border: 1px solid var(--fl-orange);
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9em;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .candy-icons { font-size: 1.4em; letter-spacing: 4px; }
+        .candy-empty { opacity: 0.2; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 50px); 
+            grid-gap: 8px;
+            justify-content: center;
+            padding: 20px;
+            background-color: #020617;
+            border: 2px solid var(--grid-line);
+            border-radius: 10px;
+            max-width: fit-content;
+            margin: 0 auto;
+        }
+
+        .day-header {
+            font-size: 0.8em;
+            color: #64748b;
+            padding-bottom: 10px;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 4px;
+            position: relative;
+        }
+        .cell:hover { border-color: var(--fl-orange); }
+
+        .date-num {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 0.7em;
+            color: #475569;
+        }
+
+        .stamp-icon { font-size: 24px; line-height: 50px; }
+
+        .logs-container {
+            max-width: 500px;
+            margin: 30px auto;
+            text-align: left;
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .log-item {
+            padding: 8px;
+            border-bottom: 1px solid var(--grid-line);
+            font-size: 0.9em;
+        }
+        .log-date { color: var(--fl-orange); margin-right: 10px; }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--text-main);
+            border: 1px solid var(--grid-line);
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            background: var(--panel-bg);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="world-clock">
+        <div class="clock-item"><span class="clock-label">JAPAN</span>{{ jst_time }}</div>
+        <div class="clock-item"><span class="clock-label">CALIFORNIA</span>{{ pst_time }}</div>
+    </div>
+
+    <div class="summary-box">
+        <span style="font-size: 0.8em; color: #64748b;">PROJECT: TAISEI_LOG_VOL.{{ sheet + 1 }}</span>
+        <h3 style="margin:5px 0; color: var(--fl-orange);">🔥 Very Good: {{ all_logs | selectattr('stamp', 'equalto', '🔥') | list | length }}</h3>
+        <h3 style="margin:5px 0; color: var(--fl-orange);">🎹 Good: {{ all_logs | selectattr('stamp', 'equalto', '🎹') | list | length }}</h3>
+    </div>
+
+    {# キャンディバー #}
+    <div class="candy-bar">
+        <span>🍬 Next Cookie:</span>
+        <span class="candy-icons">
+            {% for i in range(3) %}
+                {% if i < candy_count %}
+                    🍬
+                {% else %}
+                    <span class="candy-empty">🍬</span>
+                {% endif %}
+            {% endfor %}
+        </span>
+        <span style="color: #64748b; font-size: 0.85em;">{{ candy_count }} / 3</span>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <a href="/{{ mode }}?year={{ year if month > 1 else year - 1 }}&month={{ month - 1 if month > 1 else 12 }}" class="nav-btn">◀ Prev</a>
+        <span style="font-weight: bold; margin: 0 20px;">{{ year }} / {{ month }}</span>
+        <a href="/{{ mode }}?year={{ year if month < 12 else year + 1 }}&month={{ month + 1 if month < 12 else 1 }}" class="nav-btn">Next ▶</a>
+    </div>
+
+    <div class="grid">
+        <div class="day-header" style="color: #ef4444;">日</div>
+        <div class="day-header">月</div>
+        <div class="day-header">火</div>
+        <div class="day-header">水</div>
+        <div class="day-header">木</div>
+        <div class="day-header">金</div>
+        <div class="day-header" style="color: #3b82f6;">土</div>
+
+        {% for _ in range(first_day_index) %}
+            <div class="cell" style="opacity: 0.2;"></div>
+        {% endfor %}
+
+        {% for d in range(1, last_date + 1) %}
+            {% set date_str = "%04d-%02d-%02d" | format(year, month, d) %}
+            <div class="cell">
+                <a href="/edit/{{ mode }}/{{ date_str }}" style="text-decoration: none; color: inherit; width: 100%; height: 100%; display: block;">
+                    <span class="date-num">{{ d }}</span>
+                    {% if date_str in log_dict %}
+                        <div class="stamp-icon">{{ log_dict[date_str] }}</div>
+                    {% endif %}
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div style="max-width: 500px; margin: 20px auto; text-align: left;">
+        <h3>Latest Homework 📝</h3>
+        {% if all_logs %}
+            {{ all_logs[-1].homework }}
+        {% else %}
+            <span>（宿題の読み込みを待っています）</span>
+        {% endif %}
+    </div>
+
+    <div class="logs-container">
+        <h3>SESSION LOG 🎹</h3>
+        {% for log in all_logs | reverse %}
+        <div class="log-item">
+            <span class="log-date">{{ log.date }}</span>
+            <span>{{ log.student_comment }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="text-align:center; margin: 20px; display:flex; flex-direction:column; gap:10px; align-items:center;">
+    <button onclick="startChallenge()" style="background:#fb923c; color:white; border:none; padding:12px 30px; border-radius:8px; font-size:1em; cursor:pointer;">
+        🍬 キャンディチャレンジ
+    </button>
+    <a href="/contact/{{ mode }}" style="text-decoration:none; color:#94a3b8; border:1px solid #334155; padding:6px 16px; border-radius:6px; font-size:0.85em;">
+        ✉️ Contact Teacher
+    </a>
+    <a href="/admin/{{ mode }}" style="text-decoration:none; color:#555; border:1px solid #334155; padding:6px 12px; border-radius:6px; font-size:0.8em;">
+        管理ページへ
+    </a>
+</div>
+
+<!-- キャンディチャレンジモーダル -->
+<div id="challenge-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:#1e293b; border:1px solid #fb923c; border-radius:10px; padding:30px; max-width:400px; width:90%; text-align:center; color:#f1f5f9;">
+        <h3 id="modal-title">🍬 キャンディチャレンジ</h3>
+        <div id="modal-content">読み込み中...</div>
+        <button onclick="closeChallenge()" style="margin-top:15px; background:#334155; color:#f1f5f9; border:none; padding:8px 20px; border-radius:6px; cursor:pointer;">閉じる</button>
+    </div>
+</div>
+
+<script>
+let questions = [];
+let currentQ = 0;
+let correctCount = 0;
+
+async function startChallenge() {
+    document.getElementById('challenge-modal').style.display = 'flex';
+    document.getElementById('modal-content').innerHTML = '問題を生成中... 🍬';
+    
+    const res = await fetch('/api/candy/{{ mode }}/challenge');
+    const data = await res.json();
+    questions = data.questions;
+    currentQ = 0;
+    correctCount = 0;
+    showQuestion();
+}
+
+function showQuestion() {
+    if (currentQ >= questions.length) {
+        showResult();
+        return;
+    }
+    const q = questions[currentQ];
+    const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+    document.getElementById('modal-title').textContent = `問題 ${currentQ + 1} / ${questions.length}`;
+    document.getElementById('modal-content').innerHTML = `
+        <p style="font-size:1.1em; margin-bottom:15px;">${q.question}</p>
+        ${shuffled.map(c => `
+            <button onclick="answer('${c}', '${q.answer}')" style="display:block; width:100%; margin:6px 0; padding:10px; border:1px solid #334155; border-radius:6px; background:#0f172a; color:#f1f5f9; cursor:pointer; font-size:0.95em;">
+                ${c}
+            </button>
+        `).join('')}
+    `;
+}
+
+async function answer(selected, correct) {
+    const isCorrect = selected === correct;
+    const res = await fetch('/api/candy/{{ mode }}/answer', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({answer: selected, correct: correct})
+    });
+    const data = await res.json();
+    
+    if (isCorrect) {
+        correctCount++;
+        document.getElementById('modal-content').innerHTML =
+
+</body>
+</html>

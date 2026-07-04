@@ -1,0 +1,8 @@
+Flask 
+pytz 
+gunicorn 
+firebase-admin 
+python-dotenv 
+langgraph 
+langchain-google-genai 
+langchain-core
