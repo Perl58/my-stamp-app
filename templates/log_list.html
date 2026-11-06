@@ -1,0 +1,34 @@
+<section class="logs-container" id="class-log-list">
+<h3>{{ 'Class Logs 🍪' if mode == 's01' else 'SESSION LOG 🎹' }} <small>（過去2か月）</small></h3>
+{% for log in recent_logs %}<div class="log-item"><span class="log-date">{{ log.date }}</span> <span style="white-space:pre-wrap;overflow-wrap:anywhere">{{ log.student_comment or '' }}</span></div>
+{% else %}<p>過去2か月のログはありません。</p>{% endfor %}
+{% if older_logs %}<div id="older-log-items"></div><p id="older-log-status" role="status" aria-live="polite"></p><button type="button" id="see-more-logs" style="padding:10px 20px;font:inherit;cursor:pointer;border:1px solid currentColor;border-radius:8px;color:inherit;background:transparent">See more（以前のログ）</button>{% endif %}
+</section>
+{% if older_logs %}<script>
+(() => {
+ const button = document.getElementById('see-more-logs');
+ const list = document.getElementById('older-log-items');
+ const status = document.getElementById('older-log-status');
+ let offset = 0;
+ button.addEventListener('click', async () => {
+  button.disabled = true; status.textContent = '読み込み中…';
+  try {
+   const response = await fetch({{ url_for('get_older_logs', student=mode)|tojson }} + '?offset=' + offset + '&limit=10');
+   if (!response.ok) throw new Error('Request failed');
+   const data = await response.json();
+   if (!Array.isArray(data.logs)) throw new Error('Invalid response');
+   for (const log of data.logs) {
+    const item = document.createElement('div'); item.className = 'log-item';
+    const date = document.createElement('span'); date.className = 'log-date'; date.textContent = log.date;
+    const comment = document.createElement('span'); comment.textContent = log.student_comment || '';
+    comment.style.whiteSpace = 'pre-wrap'; comment.style.overflowWrap = 'anywhere';
+    item.append(date, document.createTextNode(' '), comment); list.append(item);
+   }
+   offset += data.logs.length;
+   button.hidden = !data.has_more;
+   status.textContent = data.has_more ? '' : 'すべてのログを表示しました。';
+  } catch (error) { status.textContent = '読み込めませんでした。See moreでもう一度お試しください。'; }
+  finally { button.disabled = false; }
+ });
+})();
+</script>{% endif %}

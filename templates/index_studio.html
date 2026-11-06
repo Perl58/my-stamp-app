@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Studio Stamp - FL Style</title>
+    <title>Japanese Class Log – Taisei</title>
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -67,7 +67,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(7, 50px); 
+            grid-template-columns: repeat(7, 50px);
             grid-gap: 8px;
             justify-content: center;
             padding: 20px;
@@ -112,12 +112,54 @@
             padding: 15px;
             border-radius: 8px;
         }
+
+        .logs-container h3 {
+            margin-top: 0;
+            color: var(--fl-orange);
+        }
+
         .log-item {
             padding: 8px;
             border-bottom: 1px solid var(--grid-line);
             font-size: 0.9em;
         }
         .log-date { color: var(--fl-orange); margin-right: 10px; }
+
+        .section-divider {
+            max-width: 500px;
+            margin: 20px auto;
+            border: none;
+            border-top: 1px solid var(--grid-line);
+        }
+
+        .read-more-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .read-more-btn {
+            padding: 10px 30px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--fl-orange);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .read-more-btn:hover {
+            background-color: var(--fl-orange);
+            color: var(--bg-dark);
+        }
+
+        .loading {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+            padding: 10px;
+        }
 
         .nav-btn {
             text-decoration: none;
@@ -127,6 +169,21 @@
             border-radius: 4px;
             font-size: 0.8em;
             background: var(--panel-bg);
+        }
+
+        @media (max-width: 600px) {
+            .logs-container {
+                margin: 20px auto;
+                padding: 10px;
+            }
+            .log-item {
+                padding: 6px;
+                font-size: 0.85em;
+            }
+            .read-more-btn {
+                padding: 8px 20px;
+                font-size: 0.9em;
+            }
         }
     </style>
 </head>
@@ -193,90 +250,117 @@
     <div style="max-width: 500px; margin: 20px auto; text-align: left;">
         <h3>Latest Homework 📝</h3>
         {% if all_logs %}
-            {{ all_logs[-1].homework }}
+            {{ latest_homework }}
         {% else %}
             <span>（宿題の読み込みを待っています）</span>
         {% endif %}
     </div>
 
-    <div class="logs-container">
-        <h3>SESSION LOG 🎹</h3>
-        {% for log in all_logs | reverse %}
-        <div class="log-item">
-            <span class="log-date">{{ log.date }}</span>
-            <span>{{ log.student_comment }}</span>
-        </div>
-        {% endfor %}
-    </div>
+    {% include 'log_list.html' %}
 
     <div style="text-align:center; margin: 20px; display:flex; flex-direction:column; gap:10px; align-items:center;">
-    <button onclick="startChallenge()" style="background:#fb923c; color:white; border:none; padding:12px 30px; border-radius:8px; font-size:1em; cursor:pointer;">
-        🍬 キャンディチャレンジ
-    </button>
-    <a href="/contact/{{ mode }}" style="text-decoration:none; color:#94a3b8; border:1px solid #334155; padding:6px 16px; border-radius:6px; font-size:0.85em;">
-        ✉️ Contact Teacher
-    </a>
-    <a href="/admin/{{ mode }}" style="text-decoration:none; color:#555; border:1px solid #334155; padding:6px 12px; border-radius:6px; font-size:0.8em;">
-        管理ページへ
-    </a>
-</div>
+        <button onclick="location.href='/quiz/{{ mode }}'" style="background:#fb923c; color:white; border:none; padding:12px 30px; border-radius:8px; font-size:1em; cursor:pointer; font-weight: bold;">
+    🎯 クイズを開始
+</button>
+        <button onclick="startChallenge()" style="background:#fb923c; color:white; border:none; padding:12px 30px; border-radius:8px; font-size:1em; cursor:pointer;">
+            🍬 キャンディチャレンジ
+        </button>
 
-<!-- キャンディチャレンジモーダル -->
-<div id="challenge-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
-    <div style="background:#1e293b; border:1px solid #fb923c; border-radius:10px; padding:30px; max-width:400px; width:90%; text-align:center; color:#f1f5f9;">
-        <h3 id="modal-title">🍬 キャンディチャレンジ</h3>
-        <div id="modal-content">読み込み中...</div>
-        <button onclick="closeChallenge()" style="margin-top:15px; background:#334155; color:#f1f5f9; border:none; padding:8px 20px; border-radius:6px; cursor:pointer;">閉じる</button>
+        <a href="/contact/{{ mode }}" style="text-decoration:none; color:#94a3b8; border:1px solid #334155; padding:6px 16px; border-radius:6px; font-size:0.85em;">
+            ✉️ Contact Teacher
+        </a>
+        <a href="/admin/{{ mode }}" style="text-decoration:none; color:#555; border:1px solid #334155; padding:6px 12px; border-radius:6px; font-size:0.8em;">
+            管理ページへ
+        </a>
     </div>
-</div>
 
-<script>
-let questions = [];
-let currentQ = 0;
-let correctCount = 0;
+    <!-- キャンディチャレンジモーダル -->
+    <div id="challenge-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:#1e293b; border:1px solid #fb923c; border-radius:10px; padding:30px; max-width:400px; width:90%; text-align:center; color:#f1f5f9;">
+            <h3 id="modal-title">🍬 キャンディチャレンジ</h3>
+            <div id="modal-content">読み込み中...</div>
+            <button onclick="closeChallenge()" style="margin-top:15px; background:#334155; color:#f1f5f9; border:none; padding:8px 20px; border-radius:6px; cursor:pointer;">閉じる</button>
+        </div>
+    </div>
 
-async function startChallenge() {
-    document.getElementById('challenge-modal').style.display = 'flex';
-    document.getElementById('modal-content').innerHTML = '問題を生成中... 🍬';
-    
-    const res = await fetch('/api/candy/{{ mode }}/challenge');
-    const data = await res.json();
-    questions = data.questions;
-    currentQ = 0;
-    correctCount = 0;
-    showQuestion();
-}
+    <script>
+        // ========================
+        // キャンディチャレンジ（既存機能）
+        // ========================
+        let questions = [];
+        let currentQ = 0;
+        let correctCount = 0;
 
-function showQuestion() {
-    if (currentQ >= questions.length) {
-        showResult();
-        return;
-    }
-    const q = questions[currentQ];
-    const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
-    document.getElementById('modal-title').textContent = `問題 ${currentQ + 1} / ${questions.length}`;
-    document.getElementById('modal-content').innerHTML = `
-        <p style="font-size:1.1em; margin-bottom:15px;">${q.question}</p>
-        ${shuffled.map(c => `
-            <button onclick="answer('${c}', '${q.answer}')" style="display:block; width:100%; margin:6px 0; padding:10px; border:1px solid #334155; border-radius:6px; background:#0f172a; color:#f1f5f9; cursor:pointer; font-size:0.95em;">
-                ${c}
-            </button>
-        `).join('')}
-    `;
-}
+        async function startChallenge() {
+            document.getElementById('challenge-modal').style.display = 'flex';
+            document.getElementById('modal-content').innerHTML = '問題を生成中... 🍬';
 
-async function answer(selected, correct) {
-    const isCorrect = selected === correct;
-    const res = await fetch('/api/candy/{{ mode }}/answer', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({answer: selected, correct: correct})
-    });
-    const data = await res.json();
-    
-    if (isCorrect) {
-        correctCount++;
-        document.getElementById('modal-content').innerHTML =
+            const res = await fetch('/api/candy/{{ mode }}/challenge');
+            const data = await res.json();
+            questions = data.questions;
+            currentQ = 0;
+            correctCount = 0;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQ >= questions.length) {
+                showResult();
+                return;
+            }
+            const q = questions[currentQ];
+            const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+            document.getElementById('modal-title').textContent = `問題 ${currentQ + 1} / ${questions.length}`;
+            document.getElementById('modal-content').innerHTML = `
+                <p style="font-size:1.1em; margin-bottom:15px;">${q.question}</p>
+                ${shuffled.map(c => `
+                    <button onclick="answer('${c}', '${q.answer}')" style="display:block; width:100%; margin:6px 0; padding:10px; border:1px solid #334155; border-radius:6px; background:#0f172a; color:#f1f5f9; cursor:pointer; font-size:0.95em;">
+                        ${c}
+                    </button>
+                `).join('')}
+            `;
+        }
+
+        async function answer(selected, correct) {
+            const isCorrect = selected === correct;
+            const res = await fetch('/api/candy/{{ mode }}/answer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({answer: selected, correct: correct})
+            });
+            const data = await res.json();
+
+            if (isCorrect) {
+                correctCount++;
+                document.getElementById('modal-content').innerHTML = `<p style="color:#4ade80; font-size:1.5em;">✅ 正解！</p>`;
+            } else {
+                document.getElementById('modal-content').innerHTML = `<p style="color:#f87171; font-size:1.5em;">❌ 不正解</p><p>正解は: ${correct}</p>`;
+            }
+
+            if (data.cookie_added) {
+                setTimeout(() => {
+                    document.getElementById('modal-content').innerHTML = `<p style="font-size:2em;">🍪</p><p>スタンプゲット！</p>`;
+                    setTimeout(() => location.reload(), 2000);
+                }, 1000);
+                return;
+            }
+
+            currentQ++;
+            setTimeout(showQuestion, 1500);
+        }
+
+        function showResult() {
+            document.getElementById('modal-title').textContent = '結果';
+            document.getElementById('modal-content').innerHTML = `
+                <p style="font-size:1.2em;">${correctCount} / ${questions.length} 正解！</p>
+                <p>${correctCount === questions.length ? '🎉 全問正解！' : 'またチャレンジしてね！'}</p>
+            `;
+        }
+
+        function closeChallenge() {
+            document.getElementById('challenge-modal').style.display = 'none';
+        }
+    </script>
 
 </body>
 </html>

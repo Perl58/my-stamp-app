@@ -28,3 +28,21 @@ check_db.py
 bdcard_01.html
 contact.html
 hibiki-learn.com.txt
+# Local verification only
+.verification-deps/
+.verification/
+
+# Secrets, local deployment settings, and private operation records
+.env.*
+!.env.example
+gsk*.txt
+*password*.txt
+*credentials*.json
+*service-account*.json
+*.pem
+*.key
+BACKUP_RECORD_*.md
+DEPLOYMENT_*.md
+# Local snapshots and duplicate templates
+app.py20*.py
+/index_studio.html

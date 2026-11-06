@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Japanese Class Log – Admin</title>
+<style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#f4e9d8;color:#4a3b2f;font-family:sans-serif}main{max-width:420px;margin:12vh auto;padding:28px;background:#fffaf2;border:1px solid #d6c7b2;border-radius:12px}h1{font-size:24px}input,button{width:100%;padding:12px;margin:12px 0;font:inherit;border:1px solid #c8b79e;border-radius:6px}button{background:#80613b;color:white;cursor:pointer}.error{color:#a12f2f}a{color:inherit}</style></head>
+<body><main><h1>Japanese Class Log</h1><p>授業ログ管理ページ</p><p>先生用パスワードを入力してください。</p>
+{% if configured %}<form method="post" action="{{ url_for('admin_login', student=student) }}"><input type="hidden" name="csrf_token" value="{{ session.login_csrf }}"><label for="password">パスワード</label><input id="password" type="password" name="password" autocomplete="current-password" required autofocus>{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}<button>ログイン</button></form>
+{% else %}<p role="alert">管理ページは準備中です。パスワードの設定が必要です。</p>{% endif %}
+<a href="{{ url_for('index', mode=mode) }}">← 生徒ページへ戻る</a></main></body></html>

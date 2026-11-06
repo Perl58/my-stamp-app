@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Ann's Stamp</title>
+    <title>Japanese Class Log – Ann</title>
     <style>
         :root {
             --snoopy-red: #e53935;
@@ -62,7 +62,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(7, 50px); 
+            grid-template-columns: repeat(7, 50px);
             grid-gap: 10px;
             justify-content: center;
             margin-top: 20px;
@@ -142,7 +142,7 @@
         </div>
         <div style="font-size: 1.5em;">🐾</div>
         <div class="clock-item">
-            <span class="clock-label">L.A.</span>
+            <span class="clock-label">FRISCO</span>
             {{ pst_time }}
         </div>
     </div>
@@ -209,21 +209,13 @@
     <div style="max-width: 500px; margin: 20px auto; text-align: left;">
         <h3>Latest Homework 📝</h3>
         {% if all_logs %}
-            {{ all_logs[-1].homework }}
+            {{ latest_homework }}
         {% else %}
             <span>（宿題の読み込みを待っています）</span>
         {% endif %}
     </div>
 
-    <div class="logs-container">
-        <h3>Class Logs 🍪</h3>
-        {% for log in all_logs | reverse %}
-        <div class="log-item">
-            <span class="log-date">{{ log.date }}</span>
-            <span>{{ log.student_comment }}</span>
-        </div>
-        {% endfor %}
-    </div>
+    {% include 'log_list.html' %}
 
     <div style="text-align:center; margin: 20px; display:flex; flex-direction:column; gap:10px; align-items:center;">
     <button onclick="startChallenge()" style="background:#e53935; color:white; border:none; padding:12px 30px; border-radius:30px; font-size:1em; cursor:pointer;">
@@ -253,7 +245,7 @@ let correctCount = 0;
 async function startChallenge() {
     document.getElementById('challenge-modal').style.display = 'flex';
     document.getElementById('modal-content').innerHTML = '問題を生成中... 🍬';
-    
+
     const res = await fetch('/api/candy/{{ mode }}/challenge');
     const data = await res.json();
     questions = data.questions;
@@ -270,7 +262,7 @@ function showQuestion() {
     const q = questions[currentQ];
     const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
     document.getElementById('modal-title').textContent = `問題 ${currentQ + 1} / ${questions.length}`;
-    
+
     const btns = shuffled.map(c => {
         const btn = document.createElement('button');
         btn.textContent = c;
@@ -278,7 +270,7 @@ function showQuestion() {
         btn.onclick = () => answer(c, q.answer);
         return btn;
     });
-    
+
     const content = document.getElementById('modal-content');
     content.innerHTML = `<p style="font-size:1.1em; margin-bottom:15px;">${q.question}</p>`;
     btns.forEach(btn => content.appendChild(btn));
@@ -292,14 +284,14 @@ async function answer(selected, correct) {
         body: JSON.stringify({answer: selected, correct: correct})
     });
     const data = await res.json();
-    
+
     if (isCorrect) {
         correctCount++;
         document.getElementById('modal-content').innerHTML = `<p style="color:green; font-size:1.5em;">✅ 正解！</p>`;
     } else {
         document.getElementById('modal-content').innerHTML = `<p style="color:red; font-size:1.5em;">❌ 不正解</p><p>正解は: ${correct}</p>`;
     }
-    
+
     if (data.cookie_added) {
         setTimeout(() => {
             document.getElementById('modal-content').innerHTML = `<p style="font-size:2em;">🍪</p><p>スタンプゲット！</p>`;
@@ -307,7 +299,7 @@ async function answer(selected, correct) {
         }, 1000);
         return;
     }
-    
+
     currentQ++;
     setTimeout(showQuestion, 1500);
 }

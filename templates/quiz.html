@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Japanese Class Log – Quiz</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --fl-orange: #fb923c;
+            --text-main: #f1f5f9;
+            --grid-line: #334155;
+        }
+        body {
+            background-color: var(--bg-dark);
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--text-main);
+            text-align: center;
+            padding: 20px;
+        }
+        .quiz-box {
+            background: var(--panel-bg);
+            border-left: 5px solid var(--fl-orange);
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 24px;
+            text-align: left;
+        }
+        .quiz-box h2 {
+            color: var(--fl-orange);
+            margin-top: 0;
+        }
+        .question {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .choices label {
+            display: block;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            border: 1px solid var(--grid-line);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .choices label:hover {
+            border-color: var(--fl-orange);
+            background: #0f172a;
+        }
+        .choices input[type="radio"] {
+            margin-right: 10px;
+            accent-color: var(--fl-orange);
+        }
+        .submit-btn {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: var(--fl-orange);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .submit-btn:hover { opacity: 0.85; }
+        .result-box {
+            background: var(--panel-bg);
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 24px;
+            text-align: center;
+        }
+        .correct { color: #4ade80; font-size: 1.4em; }
+        .wrong   { color: #f87171; font-size: 1.4em; }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 30px;
+            border: 1px solid var(--fl-orange);
+            border-radius: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            background: var(--panel-bg);
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            background: var(--fl-orange);
+            color: var(--bg-dark);
+        }
+    </style>
+</head>
+<body>
+
+<h1>🍬 Quiz Time</h1>
+<p style="color:#64748b;">{{ display_name }}</p>
+
+{% if result is not none %}
+    <div class="result-box">
+        {% if result.is_correct %}
+            <div class="correct">⭕ 正解！🍬 キャンディ獲得！</div>
+        {% else %}
+            <div class="wrong">❌ 残念！正解は「{{ result.correct_answer }}」でした</div>
+        {% endif %}
+        <p style="color:#94a3b8; margin-top:16px;">問題：{{ quiz.question }}</p>
+        <a href="/quiz/{{ mode }}" class="back-btn">もう1問</a>
+        <a href="/{{ mode }}" class="back-btn">スタンプページへ</a>
+    </div>
+
+{% elif quiz %}
+    <div class="quiz-box">
+        <h2>📝 問題</h2>
+        <p class="question">{{ quiz.question }}</p>
+        <form method="POST" action="/quiz/{{ mode }}">
+            <div class="choices">
+                {% for choice in quiz.choices %}
+                <label>
+                    <input type="radio" name="answer" value="{{ choice }}" required>
+                    {{ choice }}
+                </label>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="correct_answer" value="{{ quiz.answer }}">
+            <input type="hidden" name="question" value="{{ quiz.question }}">
+            {% for choice in quiz.choices %}
+            <input type="hidden" name="choices" value="{{ choice }}">
+            {% endfor %}
+            <button type="submit" class="submit-btn">答える</button>
+        </form>
+    </div>
+
+{% else %}
+    <div class="quiz-box">
+        <p>⚠️ クイズを生成できませんでした。ログにlesson_pointが入力されているか確認してください。</p>
+        <a href="/{{ mode }}" class="back-btn">戻る</a>
+    </div>
+{% endif %}
+
+</body>
+</html>

@@ -6,3 +6,4 @@ python-dotenv
 langgraph 
 langchain-google-genai 
 langchain-core
+langchain-groq

@@ -1,253 +1,42 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>Ritual Diary – Admin</title>
-
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Japanese Class Log – Admin</title>
 <style>
-body {
-    background: #f4e9d8;
-    font-family: "Hiragino Maru Gothic ProN", sans-serif;
-    color: #4a3b2f;
-    margin: 0;
-    padding: 0;
-}
-
-.page-wrapper {
-    max-width: 1100px;
-    margin: 40px auto;
-    padding: 20px;
-}
-
-.header {
-    text-align: center;
-    position: relative;
-    margin-bottom: 30px;
-}
-
-.header h1 {
-    font-family: "YuMincho", serif;
-    font-size: 32px;
-    margin: 0;
-}
-
-.subtitle {
-    font-size: 14px;
-    color: #7a6a58;
-}
-
-.magic-circle {
-    width: 140px;
-    height: 140px;
-    border: 1px solid rgba(180, 150, 100, 0.4);
-    border-radius: 50%;
-    position: absolute;
-    left: 50%;
-    top: -20px;
-    transform: translateX(-50%);
-    opacity: 0.35;
-}
-
-.tabs {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.tab {
-    display: inline-block;
-    padding: 8px 20px;
-    margin: 0 5px;
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid #c8b79e;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #4a3b2f;
-    font-weight: bold;
-}
-
-.tab.active {
-    background: #f7f0e6;
-    border-color: #b89c6d;
-    box-shadow: 0 0 6px rgba(200, 170, 120, 0.5);
-}
-
-.table-wrapper {
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid #d6c7b2;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 0 10px rgba(180, 150, 100, 0.2);
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    background: #e8dcc7;
-    padding: 10px;
-    border-bottom: 2px solid #c8b79e;
-    font-family: "YuMincho", serif;
-}
-
-td {
-    padding: 10px;
-    border-bottom: 1px solid #e0d4c2;
-}
-
-tr:hover {
-    background: rgba(255, 245, 230, 0.5);
-}
-
-.edit-row {
-    background: #fffdf7;
-    border-left: 4px solid #b89c6d;
-}
-
-.edit-box {
-    padding: 15px;
-}
-
-.edit-box input,
-.edit-box textarea {
-    width: 100%;
-    padding: 6px;
-    margin-bottom: 10px;
-    border: 1px solid #c8b79e;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.save-btn {
-    background: #b89c6d;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-}
-
-.cancel-btn {
-    background: #aaa;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-}
-
-.edit, .delete {
-    text-decoration: none;
-    font-size: 18px;
-    padding: 4px;
-}
-
-.edit { color: #6b4f2a; }
-.delete { color: #a35f5f; }
-
-</style>
-
-<script>
-function toggleEdit(date) {
-    const row = document.getElementById("edit-" + date);
-    row.style.display = (row.style.display === "none") ? "table-row" : "none";
-}
-</script>
-
-</head>
-<body>
-
-<div class="page-wrapper">
-
-    <header class="header">
-        <div class="magic-circle"></div>
-        <h1>class log – Admin</h1>
-        <p class="subtitle">授業ログ管理ページ</p>
-    </header>
-
-    <div class="tabs">
-        <a href="/admin/ann" class="tab {{ 'active' if mode=='ann' else '' }}">★ Ann</a>
-        <a href="/admin/taisei" class="tab {{ 'active' if mode=='taisei' else '' }}">☆ Taisei</a>
-    </div>
-
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>日付</th>
-                    <th>スタンプ</th>
-                    <th>公開コメント</th>
-                    <th>生徒コメント</th>
-                    <th>レッスンのポイント</th>
-                    <th>宿題</th>
-                    <th>AIメモ</th>
-                    <th>編集</th>
-                    <th>削除</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for log in logs %}
-                <tr>
-                    <td>{{ log.date }}</td>
-                    <td>{{ log.stamp }}</td>
-                    <td>{{ log.public_comment }}</td>
-                    <td>{{ log.student_comment }}</td>
-                    <td>{{ log.lesson_point }}</td>
-                    <td>{{ log.homework }}</td>
-                    <td class="ai-memo">{{ log.ai_memo }}</td>
-
-                    <td><a href="javascript:void(0)" onclick="toggleEdit('{{ log.date }}')" class="edit">✎</a></td>
-                    <td><a href="/delete/{{ mode }}/{{ log.date }}" class="delete">✧</a></td>
-                </tr>
-
-                <tr id="edit-{{ log.date }}" class="edit-row" style="display:none;">
-                    <td colspan="9">
-                        <form method="POST" action="/update/{{ mode }}/{{ log.date }}" class="edit-box">
-                            <label>スタンプ</label>
-                            <input type="text" name="stamp" value="{{ log.stamp }}">
-
-                            <label>公開コメント</label>
-                            <textarea name="public_comment">{{ log.public_comment }}</textarea>
-
-                            <label>生徒コメント</label>
-                            <textarea name="student_comment">{{ log.student_comment }}</textarea>
-
-                            <label>レッスンのポイント</label>
-                            <textarea name="lesson_point">{{ log.lesson_point }}</textarea>
-
-                            <label>宿題</label>
-                            <textarea name="homework">{{ log.homework }}</textarea>
-
-                            <label>AIメモ</label>
-                            <textarea name="ai_memo">{{ log.ai_memo }}</textarea>
-
-                            <button type="submit" class="save-btn">保存</button>
-                            <button type="button" class="cancel-btn" onclick="toggleEdit('{{ log.date }}')">閉じる</button>
-                        </form>
-                    </td>
-                </tr>
-
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    {# 修正: 生徒ページへ戻るリンク #}
-    <div style="text-align:center; margin-top: 30px;">
-        {% if mode == 'ann' %}
-            <a href="/s01" style="text-decoration:none; color:#7a6a58; border:1px solid #c8b79e; padding:8px 20px; border-radius:8px;">
-                ← Ann のページへ
-            </a>
-        {% else %}
-            <a href="/s02" style="text-decoration:none; color:#7a6a58; border:1px solid #c8b79e; padding:8px 20px; border-radius:8px;">
-                ← Taisei のページへ
-            </a>
-        {% endif %}
-    </div>
-
-</div>
-
-</body>
-</html>
+*{box-sizing:border-box}body{margin:0;background:#f4e9d8;color:#4a3b2f;font-family:"Hiragino Maru Gothic ProN",sans-serif;line-height:1.65}main{max-width:1100px;margin:36px auto;padding:20px}header{text-align:center}h1{margin:0;font-size:28px;font-family:YuMincho,serif}header p{color:#7a6a58}nav{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:24px 0}button,.tab{font:inherit;border:1px solid #c8b79e;border-radius:7px;background:#fffaf2;color:inherit;padding:8px 16px;cursor:pointer;text-decoration:none}.active,.primary{background:#80613b;color:#fff}button:focus-visible,a:focus-visible{outline:3px solid #80613b;outline-offset:3px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}.lesson-list{display:grid;gap:20px}.lesson-record{min-width:0;background:#fffaf2;border:1px solid #d6c7b2;border-radius:10px;overflow:hidden}.record-header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 22px;background:#e8dcc7}.record-header h2{display:flex;align-items:center;gap:18px;margin:0;font-size:20px;font-weight:normal}.stamp{font-size:24px}.lesson-content{padding:20px 22px}.lesson-content h3{margin:0 0 10px;font-size:17px}.lesson-point{font-size:17px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}.record-comments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:0 22px;padding:16px 0 20px;border-top:1px solid #e0d4c2}.record-comments h3{font-size:13px;font-weight:normal;color:#7a6a58;margin:0 0 6px}.comment-text{font-size:14px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}.record-memo{margin:0 22px 18px;color:#7a6a58;font-size:13px}.record-memo .comment-text{margin-top:8px}.caption{font-size:12px;color:#7a6a58}dialog{width:min(680px,calc(100% - 24px));max-height:90vh;border:1px solid #c8b79e;border-radius:12px;background:#fffaf2;color:inherit;padding:0}dialog::backdrop{background:rgba(0,0,0,.45)}.dialog-header,.fields,.actions{padding:20px 24px}.dialog-header{border-bottom:1px solid #d6c7b2}.dialog-header h2{font-size:21px;margin:0}.fields label{display:block;margin-bottom:20px;font-weight:bold}.fields input,.fields textarea{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #c8b79e;border-radius:6px;font:inherit;background:#fff;color:#30261e}.fields input,.fields textarea{font-weight:normal}.fields textarea{min-height:110px;resize:vertical}.fields input{max-width:180px}.fields details label{font-weight:normal}.actions{position:sticky;bottom:0;background:#fffaf2;border-top:1px solid #d6c7b2;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.danger{color:#a12f2f}.delete-form{margin:0 24px 24px;text-align:right}summary{cursor:pointer}a{color:inherit}.empty{text-align:center;padding:32px}
+@media(max-width:600px){main{padding:12px;margin:20px auto}.toolbar{font-size:13px;gap:8px;flex-wrap:wrap}.toolbar button{padding:7px 10px}.fields,.actions,.dialog-header{padding:16px}h1{font-size:24px}.record-header{padding:12px 16px}.record-header h2{font-size:18px;gap:12px}.lesson-content{padding:16px}.lesson-point{font-size:16px}.record-comments{grid-template-columns:1fr;margin:0 16px;gap:14px}.record-memo{margin:0 16px 16px}}
+</style></head><body><main>
+<header><h1>Japanese Class Log – Admin</h1><p>授業ログ管理ページ</p></header>
+<nav aria-label="生徒切り替え"><a class="tab {{ 'active' if mode == 'ann' }}" href="{{ url_for('admin_page', student='ann') }}">★ Ann</a><a class="tab {{ 'active' if mode == 'taisei' }}" href="{{ url_for('admin_page', student='taisei') }}">☆ Taisei</a></nav>
+<div class="toolbar"><a href="{{ url_for('index', mode=student_mode) }}">← 生徒ページへ</a><span>{{ logs|length }}件の記録</span><form method="post" action="{{ url_for('admin_logout') }}"><input type="hidden" name="csrf_token" value="{{ session.admin_csrf }}"><button>ログアウト</button></form></div>
+<section class="lesson-list" aria-label="授業の記録・新しい順">
+{% for log in logs %}
+<article class="lesson-record" aria-labelledby="lesson-date-{{ loop.index }}">
+  <div class="record-header">
+    <h2 id="lesson-date-{{ loop.index }}"><time datetime="{{ log.date }}">{{ log.date }}</time><span class="stamp" aria-label="スタンプ">{{ log.stamp or '' }}</span></h2>
+    <button type="button" data-open="log-{{ loop.index }}">編集</button>
+  </div>
+  <div class="lesson-content">
+    <h3>レッスンのポイント</h3>
+    <div class="lesson-point">{{ log.lesson_point or 'レッスンのポイントは未記入です。' }}</div>
+  </div>
+  {% if log.public_comment or log.student_comment %}
+  <div class="record-comments">
+    {% if log.public_comment %}<section><h3>公開コメント</h3><div class="comment-text">{{ log.public_comment }}</div></section>{% endif %}
+    {% if log.student_comment %}<section><h3>生徒コメント</h3><div class="comment-text">{{ log.student_comment }}</div></section>{% endif %}
+  </div>
+  {% endif %}
+  {% if log.ai_memo %}<details class="record-memo"><summary>AIメモ</summary><div class="comment-text">{{ log.ai_memo }}</div></details>{% endif %}
+</article>
+{% else %}<p class="empty">記録はまだありません。</p>{% endfor %}
+</section>
+{% for log in logs %}<dialog id="log-{{ loop.index }}" aria-labelledby="heading-{{ loop.index }}"><div class="dialog-header"><h2 id="heading-{{ loop.index }}">{{ log.date }} の記録</h2></div>
+<form method="post" action="{{ url_for('update_log', student=mode, date=log.date) }}"><input type="hidden" name="csrf_token" value="{{ session.admin_csrf }}"><input type="hidden" name="category" value="{{ log.category or '日常' }}"><div class="fields">
+<label>スタンプ<input name="stamp" value="{{ log.stamp or '' }}"></label>
+{% for field, label in [('lesson_point','レッスンのポイント'),('public_comment','公開コメント'),('student_comment','生徒コメント'),('homework','宿題')] %}<label>{{ label }}<textarea name="{{ field }}" rows="4">{{ log.get(field) or '' }}</textarea></label>{% endfor %}
+<details><summary>AIメモ</summary><label>AIメモ<textarea name="ai_memo" rows="5">{{ log.ai_memo or '' }}</textarea></label></details></div>
+<div class="actions"><button class="primary" type="submit">保存</button><button type="button" data-close>キャンセル</button><span class="caption">保存するまで変更は反映されません。</span></div></form>
+<form class="delete-form" method="post" action="{{ url_for('delete_log', student=mode, date=log.date) }}" onsubmit="return confirm('この日の記録を削除します。元に戻せません。削除しますか？')"><input type="hidden" name="csrf_token" value="{{ session.admin_csrf }}"><button class="danger">この記録を削除</button></form></dialog>{% endfor %}
+</main><script>
+document.querySelectorAll('[data-open]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.open).showModal()));
+document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => {const dialog=button.closest('dialog'); dialog.querySelector('form').reset(); dialog.close();}));
+document.querySelectorAll('dialog').forEach(dialog => dialog.addEventListener('cancel', () => dialog.querySelector('form').reset()));
+</script></body></html>
